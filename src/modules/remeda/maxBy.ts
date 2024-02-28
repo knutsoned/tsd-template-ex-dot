@@ -1,0 +1,78 @@
+import { purry } from './purry';
+import { PredIndexed, PredIndexedOptional } from './_types';
+
+const _maxBy =
+  (indexed: boolean) =>
+  <T>(array: Array<T>, fn: PredIndexedOptional<T, number>) => {
+    let ret: T | undefined = undefined;
+    let retMax: number | undefined = undefined;
+    array.forEach((item, i) => {
+      const max = indexed ? fn(item, i, array) : fn(item);
+      if (retMax === undefined || max > retMax) {
+        ret = item;
+        retMax = max;
+      }
+    });
+
+    return ret;
+  };
+
+/**
+ * Returns the max element using the provided predicate.
+ *
+ * If you need more control over how "max" is defined, consider using `firstBy` instead. maxBy might be deprecated in the future!
+ *
+ * @param fn the predicate
+ * @signature
+ *    R.maxBy(fn)(array)
+ *    R.maxBy.indexed(fn)(array)
+ * @example
+ *    R.pipe(
+ *      [{a: 5}, {a: 1}, {a: 3}],
+ *      R.maxBy(x => x.a)
+ *    ) // { a: 5 }
+ * @dataLast
+ * @indexed
+ * @category Array
+ */
+export function maxBy<T>(
+  fn: (item: T) => number
+): (items: ReadonlyArray<T>) => T | undefined;
+
+/**
+ * Returns the max element using the provided predicate.
+ * @param items the array
+ * @param fn the predicate
+ * @signature
+ *    R.maxBy(array, fn)
+ *    R.maxBy.indexed(array, fn)
+ * @example
+ *    R.maxBy(
+ *      [{a: 5}, {a: 1}, {a: 3}],
+ *      x => x.a
+ *    ) // { a: 5 }
+ * @dataFirst
+ * @indexed
+ * @category Array
+ */
+export function maxBy<T>(
+  items: ReadonlyArray<T>,
+  fn: (item: T) => number
+): T | undefined;
+
+export function maxBy() {
+  return purry(_maxBy(false), arguments);
+}
+
+export namespace maxBy {
+  export function indexed<T>(
+    array: ReadonlyArray<T>,
+    fn: PredIndexed<T, number>
+  ): T | undefined;
+  export function indexed<T>(
+    fn: PredIndexed<T, number>
+  ): (array: ReadonlyArray<T>) => T | undefined;
+  export function indexed() {
+    return purry(_maxBy(true), arguments);
+  }
+}
